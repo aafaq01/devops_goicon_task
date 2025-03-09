@@ -1,58 +1,69 @@
+# Task 1: Infrastructure Provisioning with AWS (CDK Python)
 
-# Welcome to your CDK Python project!
+This directory contains the AWS CDK Python implementation for setting up a basic AWS infrastructure to support a web application as required by the DevOps take-home test.
 
-This is a blank project for CDK development with Python.
+## Infrastructure Components
 
-The `cdk.json` file tells the CDK Toolkit how to execute your app.
+The CDK stack creates the following resources:
 
-This project is set up like a standard Python project.  The initialization
-process also creates a virtualenv within this project, stored under the `.venv`
-directory.  To create the virtualenv it assumes that there is a `python3`
-(or `python` for Windows) executable in your path with access to the `venv`
-package. If for any reason the automatic creation of the virtualenv fails,
-you can create the virtualenv manually.
+- A VPC with public and private subnets
+- Internet Gateway for public internet access
+- Security group allowing HTTP (port 80) and SSH (port 22) traffic
+- EC2 instance running Amazon Linux 2 in a public subnet
+- IAM role and profile for EC2 with necessary permissions
 
-To manually create a virtualenv on MacOS and Linux:
+## Files
 
-```
-$ python -m venv .venv
-```
+- `app.py` - Entry point for the CDK application
+- `task1_stack.py` - Contains the stack definition with all resources
+- `requirements.txt` - Python dependencies for the CDK application
+- `cdk.json` - CDK configuration file
 
-After the init process completes and the virtualenv is created, you can use the following
-step to activate your virtualenv.
+## Prerequisites
 
-```
-$ source .venv/bin/activate
-```
+- Python 3.8 or newer
+- AWS CLI configured with appropriate credentials
+- AWS CDK Toolkit installed (`npm install -g aws-cdk`)
+- SSH key pair created in AWS (for EC2 access)
 
-If you are a Windows platform, you would activate the virtualenv like this:
+## Setup and Deployment
 
-```
-% .venv\Scripts\activate.bat
-```
+1. Create and activate a virtual environment:
+   ```
+   python -m venv .venv
+   source .venv/bin/activate  # On Windows: .venv\Scripts\activate
+   ```
 
-Once the virtualenv is activated, you can install the required dependencies.
+2. Install required dependencies:
+   ```
+   pip install -r requirements.txt
+   ```
 
-```
-$ pip install -r requirements.txt
-```
+3. Bootstrap the CDK environment (first-time only):
+   ```
+   cdk bootstrap
+   ```
 
-At this point you can now synthesize the CloudFormation template for this code.
+4. Deploy the stack:
+   ```
+   cdk deploy
+   ```
 
-```
-$ cdk synth
-```
+5. Access your EC2 instance using the public IP displayed in the outputs:
+   ```
+   ssh -i your-key.pem ec2-user@<public_ip>
+   ```
 
-To add additional dependencies, for example other CDK libraries, just add
-them to your `setup.py` file and rerun the `pip install -r requirements.txt`
-command.
+6. When finished, destroy the infrastructure:
+   ```
+   cdk destroy
+   ```
 
-## Useful commands
+## CDK Benefits
 
- * `cdk ls`          list all stacks in the app
- * `cdk synth`       emits the synthesized CloudFormation template
- * `cdk deploy`      deploy this stack to your default AWS account/region
- * `cdk diff`        compare deployed stack with current state
- * `cdk docs`        open CDK documentation
-
-Enjoy!
+This solution demonstrates AWS CDK benefits including:
+- Using high-level programming language (Python) for infrastructure definition
+- Leveraging built-in AWS best practices through L2 constructs
+- Type checking and IDE auto-completion for AWS resources
+- Simplified resource provisioning with sensible defaults
+- Native CloudFormation integration
