@@ -1,0 +1,60 @@
+stages:
+  - lint
+  - test
+  - build
+  - deploy
+
+variables:
+  AWS_DEFAULT_REGION: "us-east-1"  # Change to your AWS region
+  AWS_ECR_REPO: "your-ecr-repo-name"  # Replace with your ECR repository name
+  AWS_ECS_CLUSTER: "your-ecs-cluster-name"  # Replace with your ECS cluster name
+  AWS_ECS_SERVICE: "your-ecs-service-name"  # Replace with your ECS service name
+  DOCKER_IMAGE_TAG: "latest"  # Docker image tag
+
+# Linting stage
+lint:
+  stage: lint
+  image: node:14  # Use the appropriate image for your application
+  script:
+    - echo "Running linting..."
+    - npm install  # Install dependencies
+    - npm run lint  # Run linting script
+  only:
+    - main  # Run linting only on the main branch
+
+# Testing stage
+test:
+  stage: test
+  image: node:14  # Use the appropriate image for your application
+  script:
+    - echo "Running unit tests..."
+    - npm install  # Install dependencies
+    - npm test  # Run unit tests
+  only:
+    - main  # Run tests only on the main branch
+
+# Build and push Docker image to AWS ECR
+build:
+  stage: build
+  image: docker:latest
+  services:
+    - docker:dind
+  script:
+    - echo "Building Docker image..."
+    - apk add --no-cache aws-cli  # Install AWS CLI
+    - aws ecr get-login-password --region $AWS_DEFAULT_REGION | docker login --username AWS --password-stdin $AWS_ECR_REPO
+    - docker build -t $AWS_ECR_REPO:$DOCKER_IMAGE_TAG .
+    - docker push $AWS_ECR_REPO:$DOCKER_IMAGE_TAG
+  only:
+    - main  # Build and push only on the main branch
+
+# Deploy to AWS ECS
+deploy:
+  stage: deploy
+  image: python:3.9  # Use an image with AWS CLI installed
+  script:
+    - echo "Deploying to AWS ECS..."
+    - pip install awscli  # Install AWS CLI
+    - aws ecs update-service --cluster $AWS_ECS_CLUSTER --service $AWS_ECS_SERVICE --force-new-deployment --region $AWS_DEFAULT_REGION
+  only:
+    - main  # Deploy only on the main branch
